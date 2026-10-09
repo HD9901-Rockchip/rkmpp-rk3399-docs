@@ -1,0 +1,99 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 650" font-family="'Noto Sans CJK SC','Microsoft YaHei',sans-serif">
+  <defs>
+    <marker id="arr" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#667085"/>
+    </marker>
+  </defs>
+  <style>
+    .hw  { fill:#e8f0fe; stroke:#4285f4; stroke-width:1.5; }
+    .cpu { fill:#fef7e0; stroke:#f9ab00; stroke-width:1.5; }
+    .bad { fill:#fde8e8; stroke:#d93025; stroke-width:2; }
+    .good{ fill:#e6f4ea; stroke:#188038; stroke-width:1.5; }
+    .t   { font-size:13px; fill:#202124; text-anchor:middle; }
+    .lab { font-size:12px; fill:#5f6368; text-anchor:middle; }
+    .ttl { font-size:15px; font-weight:bold; fill:#202124; }
+    .flow{ stroke:#667085; stroke-width:1.5; fill:none; marker-end:url(#arr); }
+  </style>
+
+  <rect x="0" y="0" width="920" height="650" fill="#ffffff"/>
+  <text x="460" y="28" text-anchor="middle" class="ttl">RK3399 Jellyfin 字幕烧录滤镜图：原始（绿屏）vs 重写（修复）</text>
+
+  <!-- ================= 上：原始链路 ================= -->
+  <text x="30" y="60" class="ttl">原始链路（overlay_rkrga，Android 绿屏）</text>
+
+  <rect x="30" y="75" width="140" height="46" rx="6" class="hw"/>
+  <text x="100" y="95" class="t">hevc_rkmpp 硬解</text>
+  <text x="100" y="112" class="lab">drm_prime (10bit)</text>
+
+  <rect x="205" y="75" width="110" height="46" rx="6" class="hw"/>
+  <text x="260" y="95" class="t">setparams</text>
+  <text x="260" y="112" class="lab">标定 BT.709</text>
+
+  <rect x="460" y="70" width="230" height="56" rx="6" class="bad"/>
+  <text x="575" y="92" class="t">overlay_rkrga 硬件混合</text>
+  <text x="575" y="110" class="lab">BGRA → NV12，色度损坏</text>
+
+  <rect x="740" y="75" width="140" height="46" rx="6" class="hw"/>
+  <text x="810" y="95" class="t">h264_rkmpp 编码</text>
+  <text x="810" y="112" class="lab">硬件</text>
+
+  <rect x="30" y="150" width="330" height="60" rx="6" class="hw"/>
+  <text x="195" y="172" class="t">alphasrc → format=bgra → subtitles(ass)</text>
+  <text x="195" y="192" class="lab">[sub] 在 CPU 生成 BGRA 字幕</text>
+
+  <rect x="520" y="150" width="260" height="34" rx="6" fill="#fce8e6"/>
+  <text x="650" y="172" class="t" fill="#d93025">结果：全画面绿偏（UV 通道损坏）</text>
+
+  <line x1="170" y1="98" x2="203" y2="98" class="flow"/>
+  <line x1="315" y1="98" x2="458" y2="98" class="flow"/>
+  <line x1="690" y1="98" x2="738" y2="98" class="flow"/>
+  <path d="M 360 180 H 480 V 130" class="flow"/>
+
+  <!-- ================= 下：重写链路 ================= -->
+  <text x="30" y="232" class="ttl">重写链路（wrapper 自动生成，颜色正常）</text>
+
+  <rect x="30" y="245" width="140" height="46" rx="6" class="hw"/>
+  <text x="100" y="265" class="t">hevc_rkmpp 硬解</text>
+  <text x="100" y="282" class="lab">drm_prime (10bit)</text>
+
+  <rect x="205" y="245" width="110" height="46" rx="6" class="hw"/>
+  <text x="260" y="265" class="t">setparams</text>
+  <text x="260" y="282" class="lab">标定 BT.709</text>
+
+  <rect x="340" y="245" width="190" height="46" rx="6" class="hw"/>
+  <text x="435" y="265" class="t">scale_rkrga=format=nv12</text>
+  <text x="435" y="282" class="lab">硬件 10bit→8bit NV12</text>
+
+  <rect x="565" y="245" width="110" height="46" rx="6" class="cpu"/>
+  <text x="620" y="265" class="t">hwdownload</text>
+  <text x="620" y="282" class="lab">拷到 CPU</text>
+
+  <rect x="700" y="330" width="130" height="46" rx="6" class="cpu"/>
+  <text x="765" y="350" class="t">overlay 软件</text>
+  <text x="765" y="368" class="lab">NV12+BGRA 合成</text>
+
+  <rect x="30" y="330" width="330" height="60" rx="6" class="cpu"/>
+  <text x="195" y="352" class="t">alphasrc → bgra → subtitles(ass)</text>
+  <text x="195" y="372" class="lab">[sub] 留在 CPU（不再 hwupload）</text>
+
+  <rect x="675" y="410" width="180" height="46" rx="6" class="cpu"/>
+  <text x="765" y="430" class="t">format=nv12 → hwupload</text>
+  <text x="765" y="448" class="lab">回 rkmpp 设备</text>
+
+  <rect x="690" y="490" width="150" height="46" rx="6" class="good"/>
+  <text x="765" y="510" class="t">h264_rkmpp 编码</text>
+  <text x="765" y="528" class="lab">硬件 ✓</text>
+
+  <line x1="170" y1="268" x2="203" y2="268" class="flow"/>
+  <line x1="315" y1="268" x2="338" y2="268" class="flow"/>
+  <line x1="530" y1="268" x2="563" y2="268" class="flow"/>
+  <path d="M 620 291 V 310 H 765 V 328" class="flow"/>
+  <line x1="360" y1="360" x2="698" y2="360" class="flow"/>
+  <line x1="765" y1="376" x2="765" y2="408" class="flow"/>
+  <line x1="765" y1="456" x2="765" y2="488" class="flow"/>
+
+  <!-- 底部注释 -->
+  <rect x="30" y="565" width="860" height="60" rx="6" fill="#f1f3f4"/>
+  <text x="50" y="588" class="lab" style="text-anchor:start">关键事实：rkmpp 解码器原始帧的 hwdownload 对所有格式一律拒绝（Invalid output format）；</text>
+  <text x="50" y="610" class="lab" style="text-anchor:start">必须先经过 scale_rkrga 才能下载到 CPU。蓝色=硬件，黄色=CPU，红色=故障点，绿色=已验证。</text>
+</svg>
